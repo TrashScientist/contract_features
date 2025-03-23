@@ -1,8 +1,4 @@
-"""Data models for the Contract Feature Engineering API.
-
-This module defines the Pydantic models used for request/response validation
-and serialization in the API endpoints.
-"""
+"""Data models for the Contract Feature Engineering API."""
 
 from pydantic import BaseModel, Field
 from typing import Optional

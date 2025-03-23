@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import json
 from app.models import ApplicationData, FeatureResponse
 from app.utils import parse_date
+from app.logging_config import logger
 
 
 def calculate_features(app_data: ApplicationData) -> FeatureResponse:
@@ -60,7 +61,7 @@ def _parse_contracts(contracts_data) -> list:
             return contracts_data
         return json.loads(contracts_data)
     except (json.JSONDecodeError, TypeError, ValueError) as e:
-        print(f"Error parsing contracts JSON: {e}")
+        logger.debug(f"Error parsing contracts JSON: {e}")
         return []
 
 

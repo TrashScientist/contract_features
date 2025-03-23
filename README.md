@@ -1,16 +1,18 @@
 # Contract Feature Engineering
 
-A production-ready FastAPI service for processing contract data and calculating features.
+A FastAPI service for processing contract data and calculating features, with both API and command-line interfaces.
 
 ## Features
 
-- Process contract data from CSV files
-- Calculate various contract-related features
+- Process contract data from JSON contracts
+- Calculate contract-related features including:
+  - Number of claims in last 180 days
+  - Sum of disbursed bank loans
+  - Days since last loan
 - RESTful API endpoints for feature calculation
-- Docker support for easy deployment
-- Comprehensive test coverage with Codecov reporting
+- Command-line interface for batch processing
+- Docker support for deployment
 - CI/CD pipeline with GitHub Actions
-- Production-grade logging and monitoring
 - Environment-based configuration
 - Health check endpoints
 - API documentation with OpenAPI/Swagger
@@ -19,7 +21,6 @@ A production-ready FastAPI service for processing contract data and calculating 
 
 - Python 3.9+
 - Docker (optional)
-- Make (optional, for using Makefile commands)
 
 ## Installation
 
@@ -28,7 +29,7 @@ A production-ready FastAPI service for processing contract data and calculating 
 1. Clone the repository:
 ```bash
 git clone <your-repo-url>
-cd contract-features
+cd json_featurization
 ```
 
 2. Create and activate a virtual environment:
@@ -60,50 +61,33 @@ docker build -t contract-features .
 docker run -p 8000:8000 --env-file .env contract-features
 ```
 
-## Development
+## Usage
 
-### Running Tests
+### Command Line Interface
 
-```bash
-# Run all tests
-pytest
-
-# Run tests with coverage
-pytest --cov=app --cov-report=term-missing
-
-# Run tests with coverage and generate XML report
-pytest --cov=app --cov-report=xml --cov-report=term-missing
-```
-
-### Code Quality
+Process a CSV file directly:
 
 ```bash
-# Format code
-black .
-isort .
+# Process data.csv and output to contract_features.csv
+python run.py --input data/data.csv --output data/contract_features.csv
 
-# Run linters
-flake8
-mypy app/
+# Start the FastAPI server
+python run.py --serve
 ```
 
-### API Documentation
+### API Server
 
 Once the server is running, you can access:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
 
-## API Endpoints
+1. **API Documentation**:
+   - Swagger UI: `http://localhost:8000/docs`
+   - ReDoc: `http://localhost:8000/redoc`
 
-### Features
-
-- `POST /calculate-features`: Calculate features for a single application
-- `POST /batch-calculate-features`: Calculate features for multiple applications
-
-### System
-
-- `GET /health`: Health check endpoint
-- `GET /`: API information and documentation
+2. **API Endpoints**:
+   - `POST /calculate-features`: Calculate features for a single application
+   - `POST /batch-calculate-features`: Calculate features for multiple applications
+   - `GET /health`: Health check endpoint
+   - `GET /`: API information
 
 ## Configuration
 
@@ -116,64 +100,53 @@ The application can be configured using environment variables:
 - `ENVIRONMENT`: Environment name (development/staging/production)
 - `API_VERSION`: API version (default: 1.0.0)
 
-## Logging
+## Project Structure
 
-Logs are written to:
-- Console output
-- `logs/app.log`: Application logs
-- `logs/error.log`: Error logs
+```
+json_featurization/
+├── app/                    # Application source code
+│   ├── main.py           # FastAPI application
+│   ├── models.py         # Data models
+│   ├── services.py       # Feature calculation logic
+│   ├── utils.py          # Utility functions
+│   └── logging_config.py # Logging configuration
+├── data/                  # Data files
+├── scripts/              # Utility scripts
+│   └── process_csv.py    # CSV processing script
+├── tests/                # Test files
+│   ├── test_api.py       # API endpoint tests
+│   └── test_features.py  # Feature calculation tests
+├── logs/                 # Application logs
+├── requirements.txt      # Python dependencies
+├── Dockerfile           # Docker configuration
+├── run.py               # CLI entry point
+└── README.md            # Project documentation
+```
 
-Log files are automatically rotated when they reach 10MB.
+## Development
+
+### Running Tests
+
+```bash
+pytest
+```
+
+With coverage reporting:
+
+```bash
+pytest --cov=app
+```
 
 ## CI/CD
 
 The project includes a GitHub Actions workflow that:
-1. Runs tests
-2. Performs code quality checks
-3. Builds and pushes Docker images (on main branch)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+1. Runs tests with coverage reporting
+2. Builds and tests the Docker image
 
 ## License
 
 MIT License
 
-## Security
-
-- All API endpoints are protected with proper input validation
-- Environment variables are used for sensitive configuration
-- Docker container runs as non-root user
-- Regular security updates through dependency management
-
-## Monitoring
-
-The application includes:
-- Health check endpoint
-- Request timing headers
-- Comprehensive logging
-- Error tracking
-- Performance monitoring
-
 ## Support
 
-For support, please open an issue in the GitHub repository.
-
-## Project Structure
-
-```
-contract-features/
-├── app/                    # Application source code
-├── data/                   # Data files (CSV, JSON)
-├── tests/                  # Test files
-├── scripts/               # Utility scripts
-├── logs/                  # Application logs
-├── requirements.txt       # Python dependencies
-├── Dockerfile            # Docker configuration
-└── README.md             # Project documentation
-``` 
+For support, please open an issue in the GitHub repository. 

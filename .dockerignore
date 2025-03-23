@@ -41,4 +41,5 @@ coverage.xml
 .DS_Store
 *.csv
 *.json
-*.log 
+*.log
+logs/ 

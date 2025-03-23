@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import time
@@ -55,21 +55,20 @@ async def calculate_features_endpoint(app_data: ApplicationData) -> FeatureRespo
         
     Returns:
         FeatureResponse: Calculated features including claim counts and loan metrics
-        
-    Raises:
-        HTTPException: If feature calculation fails or input validation fails
     """
     try:
         logger.info(f"Processing single application with ID: {app_data.id}")
         result = calculate_features(app_data)
         logger.info(f"Successfully processed application {app_data.id}")
         return result
-    except ValueError as e:
-        logger.warning(f"Validation error for application {app_data.id}: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error processing application {app_data.id}: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except (ValueError, Exception) as e:
+        logger.warning(f"Error processing application {app_data.id}: {str(e)}")
+        return FeatureResponse(
+            id=app_data.id,
+            tot_claim_cnt_l180d=-3,
+            disb_bank_loan_wo_tbc=-1,
+            day_sinlastloan=-1
+        )
 
 @app.post(
     "/batch-calculate-features", 
@@ -89,9 +88,6 @@ async def batch_calculate_features(app_data_list: List[ApplicationData]) -> List
         
     Returns:
         List[FeatureResponse]: List of calculated features for each application
-        
-    Raises:
-        HTTPException: If batch processing fails or input validation fails
     """
     try:
         logger.info(f"Processing batch of {len(app_data_list)} applications")
@@ -101,20 +97,25 @@ async def batch_calculate_features(app_data_list: List[ApplicationData]) -> List
                 result = calculate_features(app_data)
                 results.append(result)
                 logger.debug(f"Successfully processed application {app_data.id}")
-            except ValueError as e:
-                logger.warning(f"Validation error for application {app_data.id}: {str(e)}")
-                raise HTTPException(status_code=400, detail=f"Invalid data for application {app_data.id}: {str(e)}")
-            except Exception as e:
-                logger.error(f"Error processing application {app_data.id}: {str(e)}", exc_info=True)
-                raise HTTPException(status_code=500, detail="Internal server error")
+            except (ValueError, Exception) as e:
+                logger.warning(f"Error processing application {app_data.id}: {str(e)}")
+                results.append(FeatureResponse(
+                    id=app_data.id,
+                    tot_claim_cnt_l180d=-3,
+                    disb_bank_loan_wo_tbc=-1,
+                    day_sinlastloan=-1
+                ))
         
         logger.info("Successfully processed all applications in batch")
         return results
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Batch processing failed: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        return [FeatureResponse(
+            id=app_data.id,
+            tot_claim_cnt_l180d=-3,
+            disb_bank_loan_wo_tbc=-1,
+            day_sinlastloan=-1
+        ) for app_data in app_data_list]
 
 @app.get(
     "/health",
