@@ -27,9 +27,8 @@ def setup_logging():
                 filename=log_dir / "error.log",
                 maxBytes=10*1024*1024,  # 10MB
                 backupCount=5,
-                encoding='utf-8',
-                level=logging.ERROR
-            )
+                encoding='utf-8'
+            ).setLevel(logging.ERROR)
         ]
     )
     
