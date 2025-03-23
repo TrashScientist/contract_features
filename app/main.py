@@ -1,22 +1,40 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from app.models import ApplicationData, FeatureResponse
 from app.services import calculate_features
-import logging
+from app.logging_config import logger
+import time
+import os
+from dotenv import load_dotenv
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Load environment variables
+load_dotenv()
 
 app = FastAPI(
     title="Contract Feature Engineering API",
     description="API service for calculating features from contract data",
-    version="1.0.0",
+    version=os.getenv("API_VERSION", "1.0.0"),
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
 
 @app.post(
     "/calculate-features",
@@ -45,9 +63,12 @@ async def calculate_features_endpoint(app_data: ApplicationData) -> FeatureRespo
         result = calculate_features(app_data)
         logger.info(f"Successfully processed application {app_data.id}")
         return result
+    except ValueError as e:
+        logger.warning(f"Validation error for application {app_data.id}: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error processing application {app_data.id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Feature calculation failed: {str(e)}")
+        logger.error(f"Error processing application {app_data.id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.post(
     "/batch-calculate-features", 
@@ -79,15 +100,20 @@ async def batch_calculate_features(app_data_list: List[ApplicationData]) -> List
                 result = calculate_features(app_data)
                 results.append(result)
                 logger.debug(f"Successfully processed application {app_data.id}")
+            except ValueError as e:
+                logger.warning(f"Validation error for application {app_data.id}: {str(e)}")
+                raise HTTPException(status_code=400, detail=f"Invalid data for application {app_data.id}: {str(e)}")
             except Exception as e:
-                logger.error(f"Error processing application {app_data.id}: {str(e)}")
-                raise HTTPException(status_code=500, detail=f"Failed processing application {app_data.id}: {str(e)}")
+                logger.error(f"Error processing application {app_data.id}: {str(e)}", exc_info=True)
+                raise HTTPException(status_code=500, detail="Internal server error")
         
         logger.info("Successfully processed all applications in batch")
         return results
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Batch processing failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Batch processing failed: {str(e)}")
+        logger.error(f"Batch processing failed: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get(
     "/health",
@@ -104,7 +130,11 @@ async def health_check() -> dict:
     Returns:
         dict: Health status information
     """
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        "version": os.getenv("API_VERSION", "1.0.0"),
+        "environment": os.getenv("ENVIRONMENT", "development")
+    }
 
 @app.get(
     "/",
@@ -124,7 +154,8 @@ async def root() -> dict:
     return {
         "name": "Contract Feature Engineering API",
         "description": "API for calculating features from contract data",
-        "version": "1.0.0",
+        "version": os.getenv("API_VERSION", "1.0.0"),
+        "environment": os.getenv("ENVIRONMENT", "development"),
         "endpoints": {
             "/calculate-features": "Calculate features for a single application",
             "/batch-calculate-features": "Calculate features for multiple applications",
