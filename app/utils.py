@@ -6,7 +6,7 @@ def parse_date(date_str: str) -> datetime:
     Returns None if the date string is empty or invalid.
     All datetime objects returned will be timezone-naive.
     """
-    if not date_str or date_str == "":
+    if not date_str:
         return None
     
     try:
@@ -16,6 +16,6 @@ def parse_date(date_str: str) -> datetime:
             return datetime.strptime(f"{parts[2]}-{parts[1]}-{parts[0]}", "%Y-%m-%d")
     except Exception:
         # Return None for any parsing errors
-        return None
+        pass
     
     return None

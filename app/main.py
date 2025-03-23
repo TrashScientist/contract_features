@@ -1,12 +1,13 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
-from app.models import ApplicationData, FeatureResponse
-from app.services import calculate_features
-from app.logging_config import logger
 import time
 import os
 from dotenv import load_dotenv
+
+from app.models import ApplicationData, FeatureResponse
+from app.services import calculate_features
+from app.logging_config import logger
 
 # Load environment variables
 load_dotenv()
