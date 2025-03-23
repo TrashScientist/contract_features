@@ -8,7 +8,7 @@ A production-ready FastAPI service for processing contract data and calculating 
 - Calculate various contract-related features
 - RESTful API endpoints for feature calculation
 - Docker support for easy deployment
-- Comprehensive test coverage
+- Comprehensive test coverage with Codecov reporting
 - CI/CD pipeline with GitHub Actions
 - Production-grade logging and monitoring
 - Environment-based configuration
@@ -69,10 +69,10 @@ docker run -p 8000:8000 --env-file .env contract-features
 pytest
 
 # Run tests with coverage
-pytest --cov=app
+pytest --cov=app --cov-report=term-missing
 
-# Run specific test file
-pytest tests/test_api.py
+# Run tests with coverage and generate XML report
+pytest --cov=app --cov-report=xml --cov-report=term-missing
 ```
 
 ### Code Quality
@@ -162,4 +162,18 @@ The application includes:
 
 ## Support
 
-For support, please open an issue in the GitHub repository. 
+For support, please open an issue in the GitHub repository.
+
+## Project Structure
+
+```
+contract-features/
+├── app/                    # Application source code
+├── data/                   # Data files (CSV, JSON)
+├── tests/                  # Test files
+├── scripts/               # Utility scripts
+├── logs/                  # Application logs
+├── requirements.txt       # Python dependencies
+├── Dockerfile            # Docker configuration
+└── README.md             # Project documentation
+``` 
