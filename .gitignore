@@ -38,6 +38,7 @@ coverage.xml
 *.csv
 *.json
 *.log
+logs/
 
 # Docker
 .docker/ 
