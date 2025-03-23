@@ -8,7 +8,6 @@ A production-ready FastAPI service for processing contract data and calculating 
 - Calculate various contract-related features
 - RESTful API endpoints for feature calculation
 - Docker support for easy deployment
-- Comprehensive test coverage with Codecov reporting
 - CI/CD pipeline with GitHub Actions
 - Production-grade logging and monitoring
 - Environment-based configuration
@@ -67,12 +66,6 @@ docker run -p 8000:8000 --env-file .env contract-features
 ```bash
 # Run all tests
 pytest
-
-# Run tests with coverage
-pytest --cov=app --cov-report=term-missing
-
-# Run tests with coverage and generate XML report
-pytest --cov=app --cov-report=xml --cov-report=term-missing
 ```
 
 ### Code Quality
@@ -131,6 +124,16 @@ The project includes a GitHub Actions workflow that:
 1. Runs tests
 2. Performs code quality checks
 3. Builds and pushes Docker images (on main branch)
+
+### Setting up Codecov
+
+1. Sign up for Codecov at https://codecov.io
+2. Connect your GitHub repository
+3. Get your repository upload token from Codecov Settings
+4. Add the token to your GitHub repository secrets:
+   - Go to repository Settings > Secrets and variables > Actions
+   - Add new secret named `CODECOV_TOKEN`
+   - Paste your Codecov repository token
 
 ## Contributing
 
